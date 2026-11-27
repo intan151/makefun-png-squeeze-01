@@ -853,8 +853,10 @@ for (const id of readdirSync(I).sort()) {
   const { width, height, rgba } = decodePng(new Uint8Array(readFileSync(join(I, id, 'image.png'))));
   const best = screen(rgba, width, height);
   const data = best.data;
+  // Only the default strategy: the filtered strategy never wins on a
+  // screenshot whose winner is unfiltered (and where the optimal parser
+  // runs, it beats both), so the second level-9 run is pure wall time.
   const z9a = deflateSync(data, { level: 9, memLevel: 9 });
-  const z9b = deflateSync(data, { level: 9, memLevel: 9, strategy: constants.Z_FILTERED });
   // The optimal parser only ever beats zlib 9 on filtered data (minimum-sum,
   // fewest-pairs, or brute-force rows): on unfiltered rows it loses by
   // 10-13%, so running it there is pure wall-clock waste. Skip it when the
@@ -863,7 +865,6 @@ for (const id of readdirSync(I).sort()) {
     ? { maxChain: 96, niceLen: 48 }
     : { maxChain: 64, niceLen: 32 });
   let idat = z9a;
-  if (z9b.length < idat.length) idat = z9b;
   if (opt !== null && opt.length < idat.length) idat = opt;
   const png = pngOfForm(width, height, best.form, idat);
   mkdirSync(join(O, id), { recursive: true });
