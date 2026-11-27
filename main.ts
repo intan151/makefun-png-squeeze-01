@@ -855,12 +855,16 @@ for (const id of readdirSync(I).sort()) {
   const data = best.data;
   const z9a = deflateSync(data, { level: 9, memLevel: 9 });
   const z9b = deflateSync(data, { level: 9, memLevel: 9, strategy: constants.Z_FILTERED });
-  const opt = optimalDeflate(data, data.length <= 3000000
+  // The optimal parser only ever beats zlib 9 on filtered data (minimum-sum,
+  // fewest-pairs, or brute-force rows): on unfiltered rows it loses by
+  // 10-13%, so running it there is pure wall-clock waste. Skip it when the
+  // screen winner is the unfiltered choice; zlib 9 is the answer then.
+  const opt = best.choice === 0 ? null : optimalDeflate(data, data.length <= 3000000
     ? { maxChain: 96, niceLen: 48 }
     : { maxChain: 64, niceLen: 32 });
   let idat = z9a;
   if (z9b.length < idat.length) idat = z9b;
-  if (opt.length < idat.length) idat = opt;
+  if (opt !== null && opt.length < idat.length) idat = opt;
   const png = pngOfForm(width, height, best.form, idat);
   mkdirSync(join(O, id), { recursive: true });
   writeFileSync(join(O, id, 'image.png'), png);

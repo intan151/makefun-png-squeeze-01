@@ -30,7 +30,7 @@ write the same bytes.
 
 ## Practice score
 
-716,819 / 1,000,000 on the kit's practice set (house baseline fixed-paeth:
+716,776 / 1,000,000 on the kit's practice set (house baseline fixed-paeth:
 420,399; scale: 666,667), verified with the kit's own `grade-local`.
 
 ## Run
